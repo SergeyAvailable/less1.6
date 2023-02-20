@@ -1,0 +1,42 @@
+version: '3'
+
+networks:
+  less1.1_nginx1:
+  less1.1_nginx2:
+
+services:
+  nginx1:
+    image: nginx:1.23.3-alpine
+    restart: always
+    container_name: nginx1_less1.6
+    volumes:
+      - ./conf/nginx1.conf:/etc/nginx/conf.d/nginx1.conf
+    ports:
+      - 8001:8001
+    networks:
+      - less1.1_nginx1
+
+  nginx2:
+    image: nginx:1.23.3-alpine
+    restart: always
+    container_name: nginx2_less1.6
+    volumes:
+      - ./conf/nginx2.conf:/etc/nginx/conf.d/nginx2.conf
+    ports:
+      - 8002:8002
+    networks:
+      - less1.1_nginx2
+
+  grafana:
+    image: grafana/grafana:9.3.6
+    restart: unless-stopped
+    container_name: grafana_less1.6
+    networks:
+      - less1.1_nginx1
+      - less1.1_nginx2
+    healthcheck:
+      test: ping -c 1 nginx1 || exit 1
+      start_period: 5s
+      interval: 6s
+      timeout: 3s 
+      retries: 2
